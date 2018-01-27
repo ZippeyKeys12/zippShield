@@ -1,4 +1,4 @@
 GameInfo {
-	PlayerClasses = "ZPlayer"
+	PlayerClasses = "ZShield"
 	EventHandlers = "StartupHandler", "ZHandler_Recharger_S"
 }

@@ -1,6 +1,6 @@
 version "3.2.5"
 
-struct ZPlayerDefaults{
+struct ZShieldDefaults{
 	const MAX_HEALTH			=100;
 	const RUN_HEALTH			=floor(MAX_HEALTH/4);
 	const MAX_SHIELD			=MAX_HEALTH;
@@ -18,7 +18,7 @@ class Z_Lib{
 	}
 }
 
-class ZPlayer:DoomPlayer{
+class ZShield:DoomPlayer{
 	int shield,
 		maxShield,
 		maxOvershield,
@@ -35,14 +35,14 @@ class ZPlayer:DoomPlayer{
 
 	Default{
 		//Health
-		Health 						ZPlayerDefaults.MAX_HEALTH;
-		Player.MaxHealth 			ZPlayerDefaults.MAX_HEALTH;
-		Player.RunHealth 			ZPlayerDefaults.RUN_HEALTH;
-		ZPlayer.Shield 				ZPlayerDefaults.MAX_SHIELD;
-		ZPlayer.MaxShield 			ZPlayerDefaults.MAX_SHIELD, ZPlayerDefaults.MAX_SHIELD*ZPlayerDefaults.OVERSHIELD_FACTOR;
-		ZPlayer.ShieldDivider 		ZPlayerDefaults.SHIELD_DIVIDER;
-		ZPlayer.ShieldRecharge 		ZPlayerDefaults.SHIELD_RECHARGE;
-		ZPlayer.ShieldRechargeRate 	ZPlayerDefaults.SHIELD_RECHARGE_RATE;
+		Health 						ZShieldDefaults.MAX_HEALTH;
+		Player.MaxHealth 			ZShieldDefaults.MAX_HEALTH;
+		Player.RunHealth 			ZShieldDefaults.RUN_HEALTH;
+		ZShield.Shield 				ZShieldDefaults.MAX_SHIELD;
+		ZShield.MaxShield 			ZShieldDefaults.MAX_SHIELD, ZShieldDefaults.MAX_SHIELD*ZShieldDefaults.OVERSHIELD_FACTOR;
+		ZShield.ShieldDivider 		ZShieldDefaults.SHIELD_DIVIDER;
+		ZShield.ShieldRecharge 		ZShieldDefaults.SHIELD_RECHARGE;
+		ZShield.ShieldRechargeRate 	ZShieldDefaults.SHIELD_RECHARGE_RATE;
 	}
 	
 	override int DamageMobj(Actor inflictor, Actor source, int damage, Name mod, int flags = 0, double angle = 0){
@@ -67,12 +67,12 @@ class ZPlayer:DoomPlayer{
 	}
 }
 
-class ZHandler_Recharger_S:ZHandler{
+class ZHandler_Recharger_S:EventHandler{
 	int 	oldStats,
 			newStats,
 			shieldRecharger;
 
-	ZPlayer activePlayer;
+	ZShield activePlayer;
 	
 	override void OnRegister(){
 		super.OnRegister();
@@ -81,22 +81,24 @@ class ZHandler_Recharger_S:ZHandler{
 	}
 	
 	override void PlayerEntered(PlayerEvent e){
-		activePlayer=ZPlayer(players[e.playernumber].mo);
+		activePlayer=ZShield(players[e.playernumber].mo);
 	}
 	
 	override void WorldTick(){
 		if(!activePlayer||activePlayer.health<=0)return;
 		newStats=activePlayer.health
 				+activePlayer.shield;
-		if(oldStats==newStats && activePlayer.shield<activePlayer.maxShield && (activePlayer.shield%activePlayer.shieldDivider!=0||activePlayer.shield==0)){
-				if(shieldRecharger>=activePlayer.shieldRechargeRate){
-					activePlayer.shield+=activePlayer.shieldRecharge;
-					shieldRecharger=0;
-					Z_Lib.DebugStats(String.Format("Shield: %d", activePlayer.shield));
-				}else{
-					shieldRecharger++;
-					Z_Lib.DebugStats(String.Format("Shield Recharge: %d", shieldRecharger));
-				}
+		if(oldStats==newStats && activePlayer.shield<activePlayer.maxShield
+		   && (activePlayer.shield%activePlayer.shieldDivider!=0
+		   || activePlayer.shield==0)){
+			if(shieldRecharger>=activePlayer.shieldRechargeRate){
+				activePlayer.shield+=activePlayer.shieldRecharge;
+				shieldRecharger=0;
+				Z_Lib.DebugStats(String.Format("Shield: %d", activePlayer.shield));
+			}else{
+				shieldRecharger++;
+				Z_Lib.DebugStats(String.Format("Shield Recharge: %d", shieldRecharger));
+			}
 		}else
 			shieldRecharger=0;
 		oldStats=activePlayer.health
