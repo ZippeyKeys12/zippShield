@@ -1,4 +1,4 @@
-version "3.2.5"
+version "3.2.4"
 
 struct ZShieldDefaults{
 	const MAX_HEALTH			=100;
@@ -10,7 +10,7 @@ struct ZShieldDefaults{
 	const SHIELD_RECHARGE_RATE	=5;
 }
 
-class Z_Lib{
+class Z_Lib_St{
 	static void DebugStats(String str){
 		if(z_debug_shield){
 			console.printf(str);
@@ -47,13 +47,13 @@ class ZShield:DoomPlayer{
 	
 	override int DamageMobj(Actor inflictor, Actor source, int damage, Name mod, int flags = 0, double angle = 0){
 		damage=super.DamageMobj(inflictor, source, damage, mod, flags, angle);
-		Z_Lib.DebugStats(String.Format("Health: %d", health));
-		Z_Lib.DebugStats(String.Format("Shield: %d", shield));
+		Z_Lib_St.DebugStats("Health: "..health);
+		Z_Lib_St.DebugStats("Shield: "..shield);
 		return damage;
 	}
 	
 	override int TakeSpecialDamage(Actor inflictor, Actor source, int damage, Name damagetype){
-		Z_Lib.DebugStats(String.Format("OG Damage: %d", damage));
+		Z_Lib_St.DebugStats("OG Damage: "..damage);
 		damage = super.TakeSpecialDamage(inflictor, source, damage, damagetype); //Get the damage amount from the OG TakeSpecialDamage function with 2* raw damage
 		if(damage<=0){return 0;}
 		if(damage<=shield){
@@ -76,7 +76,7 @@ class ZHandler_Recharger_S:EventHandler{
 	
 	override void OnRegister(){
 		super.OnRegister();
-		SetOrder(int('Recharging'));
+		SetOrder(int('Shield'));
 		shieldRecharger=0;
 	}
 	
@@ -94,10 +94,10 @@ class ZHandler_Recharger_S:EventHandler{
 			if(shieldRecharger>=activePlayer.shieldRechargeRate){
 				activePlayer.shield+=activePlayer.shieldRecharge;
 				shieldRecharger=0;
-				Z_Lib.DebugStats(String.Format("Shield: %d", activePlayer.shield));
+				Z_Lib_St.DebugStats("Shield: "..activePlayer.shield);
 			}else{
 				shieldRecharger++;
-				Z_Lib.DebugStats(String.Format("Shield Recharge: %d", shieldRecharger));
+				Z_Lib_St.DebugStats("Shield Recharge: "..shieldRecharger);
 			}
 		}else
 			shieldRecharger=0;
